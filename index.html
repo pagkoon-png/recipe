@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RE:CIPE | Recipe Variation & Discovery</title>
+<style>
+:root{
+  --bg:#fbfaf7;--card:#fff;--ink:#292622;--muted:#77716b;--line:#e7e1da;
+  --brand:#b85f3b;--brand-soft:#f8ebe5;--green:#28704c;--green-soft:#eaf5ee;
+  --yellow:#8a641e;--yellow-soft:#fff5df;--red:#a94747;--shadow:0 10px 28px rgba(60,40,20,.07)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;line-height:1.6}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.header{position:sticky;top:0;z-index:20;background:rgba(251,250,247,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:1180px;margin:auto;height:72px;padding:0 22px;display:flex;align-items:center;gap:34px}
+.logo{font-weight:900;letter-spacing:.08em;font-size:20px}
+.logo span{color:var(--brand)}
+.nav{display:flex;gap:6px;align-items:center}
+.nav button{border:0;background:transparent;color:#665f59;padding:9px 13px;border-radius:10px}
+.nav button.active,.nav button:hover{background:var(--brand-soft);color:var(--brand);font-weight:750}
+main{min-height:calc(100vh - 72px)}
+.page{display:none}.page.active{display:block}
+.wrap{max-width:1180px;margin:auto;padding:0 22px}
+.hero{min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;text-align:center}
+.hero-inner{max-width:780px}
+.hero-logo{font-size:clamp(56px,11vw,112px);font-weight:900;letter-spacing:.07em;line-height:1}
+.hero-logo span{color:var(--brand)}
+.hero-sub{font-size:16px;color:var(--muted);margin:20px auto 28px;min-height:52px}
+.hero-kicker{font-size:12px;letter-spacing:.16em;color:var(--muted);font-weight:800}
+.hero-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:750;background:var(--brand);color:#fff}
+.btn.secondary{background:var(--brand-soft);color:#9f4e30;border:1px solid #efd2c4}
+.btn.ghost{background:#f2efeb;color:#574f48}
+.page-head{padding:42px 0 24px}
+.page-head .eyebrow{font-size:12px;letter-spacing:.12em;font-weight:850;color:var(--brand)}
+.page-head h1{font-size:clamp(28px,5vw,42px);margin:7px 0}
+.page-head p{color:var(--muted);max-width:720px;margin:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding-bottom:60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card h2{font-size:19px;margin:0 0 5px}.sub{font-size:13px;color:var(--muted);margin:0 0 15px}
+label{display:block;font-size:13px;font-weight:750;margin:12px 0 6px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);padding:11px 12px}
+textarea{min-height:90px;resize:vertical}
+.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font-size:13px}
+.chip:hover{background:var(--green-soft);border-color:#b8d9c4}
+.note{background:var(--yellow-soft);border:1px solid #f0dfb7;border-radius:12px;padding:11px 13px;font-size:13px;color:#72551c;margin-top:12px}
+.recommendations{display:grid;gap:10px}
+.rec{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fff}
+.rec-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.rec h3{font-size:16px;margin:0}.rec p{font-size:13px;color:var(--muted);margin:5px 0}
+.pill{display:inline-block;padding:4px 9px;border-radius:99px;font-size:12px;font-weight:800;background:var(--green-soft);color:var(--green)}
+.pill.warn{background:var(--yellow-soft);color:var(--yellow)}
+.pill.bad{background:#ffeded;color:var(--red)}
+.result{display:none}.result.show{display:block}
+.section{border-top:1px solid var(--line);padding-top:15px;margin-top:15px}
+.section h3{font-size:16px;margin:0 0 10px}
+.tip{background:#f7f4f0;border-radius:12px;padding:11px 12px;margin:8px 0;font-size:14px}
+.list{padding-left:20px;margin:7px 0}.list li{margin:6px 0}
+.ingredient-table{width:100%;border-collapse:collapse;font-size:14px}
+.ingredient-table td{padding:9px 5px;border-bottom:1px solid #f0eae4}
+.ingredient-table td:last-child{text-align:right}
+.role-card{border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;background:#fff}
+.role-card b{display:block;margin-bottom:4px}.muted{color:var(--muted);font-size:13px}
+.change-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}
+.change{background:#f7f4f0;border-radius:9px;padding:8px;font-size:12px}
+.mode-tabs,.input-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 15px}
+.mode-tabs button,.input-tabs button{border:1px solid var(--line);background:#fff;color:#665f59;padding:8px 12px;border-radius:10px}
+.mode-tabs button.active,.input-tabs button.active{background:var(--brand-soft);color:var(--brand);border-color:#efd2c4;font-weight:800}
+.mode{display:none}.mode.active{display:block}
+.dynamic-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin:8px 0}
+.dynamic-row button{border:0;background:#f1eeea;border-radius:10px;padding:0 12px}
+.prompt-box{white-space:pre-wrap;background:#292622;color:#fff;border-radius:14px;padding:15px;font-size:13px;line-height:1.65}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+@media(max-width:820px){.header-inner{gap:12px}.grid{grid-template-columns:1fr}.change-grid{grid-template-columns:1fr}.dynamic-row{grid-template-columns:1fr 1fr auto}}
+@media(max-width:560px){.header-inner{height:auto;min-height:70px;flex-wrap:wrap;padding:12px 16px}.nav{width:100%;overflow:auto}.hero-logo{font-size:56px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <button class="logo" onclick="go('home')" aria-label="RE:CIPE 홈">RE:<span>CIPE</span></button>
+    <nav class="nav">
+      <button data-page="home" onclick="go('home')">⌂ 홈</button>
+      <button data-page="recommend" onclick="go('recommend')">◈ 레시피 추천</button>
+      <button data-page="variation" onclick="go('variation')">↻ 레시피 변형</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section id="home" class="page active">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-kicker">RECIPE VARIATION & DISCOVERY</div>
+      <div class="hero-logo">RE:<span>CIPE</span></div>
+      <p id="quote" class="hero-sub"></p>
+      <div class="hero-actions">
+        <button class="btn" onclick="go('recommend')">레시피 추천 시작</button>
+        <button class="btn secondary" onclick="go('variation')">레시피 변형하기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="recommend" class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="eyebrow">RECIPE DISCOVERY</div>
+      <h1>냉장고 속 재료로,<br>오늘 만들 요리를 찾아보세요.</h1>
+      <p>같은 조의 냉장고 속 레시피 추천 기능을 RE:CIPE의 「레시피 추천」 메뉴에 통합했습니다. 재료를 등록하면 현재 프로토타입의 레시피 데이터와 비교해 추천합니다.</p>
+    </div>
+    <div class="grid">
+      <section>
+        <div class="card">
+          <h2>① 내 냉장고 재료</h2>
+          <p class="sub">재료는 이 브라우저에 저장됩니다.</p>
+          <div class="row"><input id="newIng" placeholder="예: 양파, 두부, 버터"><button class="btn" id="addIng">추가</button></div>
+          <div class="chips" id="pantry"></div>
+          <div class="actions"><button class="btn secondary" id="resetPantry">예시 재료 불러오기</button><button class="btn ghost" id="clearPantry">전체 비우기</button></div>
+          <div class="note">현재 버전은 보유 재료와 내장 레시피를 비교하는 프런트엔드 프로토타입입니다. 외부 AI/API와 실시간 레시피 검색은 아직 연결하지 않았습니다.</div>
+        </div>
+
+        <div class="card">
+          <h2>② 추천 레시피</h2>
+          <p class="sub">보유 재료가 많은 레시피부터 보여줍니다.</p>
+          <div id="recommendations" class="recommendations"></div>
+        </div>
+
+        <div class="card">
+          <h2>③ 만들고 싶은 음식</h2>
+          <p class="sub">현재 예시 레시피는 크림 새우 파스타, 김치찌개, 계란볶음밥입니다.</p>
+          <label for="dish">음식 이름</label>
+          <input id="dish" value="크림 새우 파스타" placeholder="예: 김치찌개">
+          <label for="style">원하는 방식</label>
+          <select id="style"><option>원래 음식의 특징을 최대한 유지</option><option>가장 쉽고 실패 적은 방식</option><option>보유 재료를 최대한 활용</option></select>
+          <label for="notes">추가 조건</label>
+          <textarea id="notes" placeholder="예: 2인분, 우유는 조금밖에 없음, 매운맛 약하게"></textarea>
+          <div class="actions"><button class="btn" id="makeRecommend">레시피 보기</button><button class="btn secondary" id="sampleRecommend">예시 보기</button></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="card result" id="recommendResult">
+          <div class="pill" id="recStatus">분석 결과</div>
+          <h2 id="resultTitle" style="margin-top:8px">추천 레시피</h2>
+          <p class="sub" id="resultIntro"></p>
+          <div class="section"><h3>재료 대체 결과와 예상되는 변화</h3><div id="substitutions"></div></div>
+          <div class="section"><h3>재료의 역할 이해하기</h3><div id="ingredientRoles"></div></div>
+          <div class="section"><h3>준비할 재료</h3><div id="ingredients"></div></div>
+          <div class="section"><h3>초보자용 조리 순서</h3><ol class="list" id="steps"></ol></div>
+          <div class="section"><h3>실패 방지 & 복구 팁</h3><div id="troubles"></div></div>
+          <div class="section"><h3>맛 조절</h3><div id="taste"></div></div>
+        </div>
+        <div class="card" id="recommendEmpty">
+          <h2>레시피 결과가 여기에 표시됩니다</h2>
+          <p class="sub">왼쪽에서 재료를 등록하고 음식 이름을 입력한 뒤 버튼을 눌러보세요.</p>
+          <div class="tip">핵심 재료가 없는 경우 억지로 대체하지 않고 「확인 필요」로 표시하도록 구성했습니다.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<section id="variation" class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="eyebrow">RECIPE VARIATION</div>
+      <h1>원래 레시피에<br>나만의 한 끗을 더해보세요.</h1>
+      <p>레시피를 사진이나 텍스트로 넣고, 재료 대체·양 조절·두 가지를 동시에 요청할 수 있습니다. 현재 화면은 실제 AI API를 연결하기 전의 배포 가능한 프런트엔드 프로토타입입니다.</p>
+    </div>
+    <div class="grid">
+      <section>
+        <div class="card">
+          <h2>① 레시피 입력</h2>
+          <div class="input-tabs">
+            <button class="active" data-input="text">텍스트 입력</button>
+            <button data-input="photo">사진 입력</button>
+          </div>
+          <div id="textInput">
+            <label>레시피 이름</label><input id="varName" placeholder="예: 팥양갱">
+            <label>원래 레시피</label><textarea id="recipeText" placeholder="재료와 조리법을 붙여 넣어주세요."></textarea>
+          </div>
+          <div id="photoInput" style="display:none">
+            <label>레시피 사진</label><input id="recipePhoto" type="file" accept="image/*">
+            <p class="muted">사진 선택 UI까지 구현되어 있습니다. 실제 OCR/이미지 분석은 AI 백엔드 연결 후 활성화할 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>② 무엇을 바꿀까요?</h2>
+          <div class="mode-tabs">
+            <button class="active" data-mode="sub">재료 대체</button>
+            <button data-mode="ratio">양/비율 조절</button>
+            <button data-mode="both">둘 다</button>
+          </div>
+
+          <div id="mode-sub" class="mode active">
+            <div id="subRows"></div>
+            <button class="btn secondary" onclick="addSubRow()">+ 대체 재료 추가</button>
+          </div>
+
+          <div id="mode-ratio" class="mode">
+            <div id="ratioRows"></div>
+            <button class="btn secondary" onclick="addRatioRow()">+ 양 조절 추가</button>
+          </div>
+
+          <div id="mode-both" class="mode">
+            <p class="muted">두 기능을 함께 사용합니다. 아래 두 영역에 원하는 변경사항을 각각 입력하세요.</p>
+            <div id="bothSubRows"></div>
+            <button class="btn secondary" onclick="addBothSubRow()">+ 대체 재료 추가</button>
+            <div style="height:10px"></div>
+            <div id="bothRatioRows"></div>
+            <button class="btn secondary" onclick="addBothRatioRow()">+ 양 조절 추가</button>
+          </div>
+
+          <label>원하는 결과</label>
+          <textarea id="goal" placeholder="예: 팥 맛을 더 진하게 하고 싶어요. 너무 단단하지 않았으면 좋겠어요."></textarea>
+          <div class="actions"><button class="btn" onclick="generateVariation()">변형 결과 만들기</button><button class="btn ghost" onclick="resetVariation()">초기화</button></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="card">
+          <h2>③ 변형 결과 / 타당성 평가</h2>
+          <div id="variationResult" class="tip">왼쪽에서 변경사항을 입력하고 「변형 결과 만들기」를 눌러주세요.</div>
+          <div id="variationDetails"></div>
+        </div>
+        <div class="card">
+          <h2>AI 연결용 요청문</h2>
+          <p class="sub">실제 AI API를 연결할 때 이 요청 구조를 백엔드에 전달할 수 있습니다.</p>
+          <div id="promptBox" class="prompt-box">아직 생성된 요청문이 없습니다.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+</main>
+<footer>RE:CIPE · Recipe Variation & Discovery · 결과는 재료 제품·화력·도구에 따라 달라질 수 있습니다. 알레르기와 식품 안전 정보는 별도로 확인하세요.</footer>
+
+<script>
+const quotes=[
+"레시피는 정답이 아니라, 내가 만드는 요리의 시작입니다.",
+"오늘의 냉장고가 오늘의 레시피가 됩니다.",
+"조금 바꿔도, 나만의 맛이 될 수 있어요.",
+"재료가 달라지면 레시피도 달라져야 하니까.",
+"남은 재료도 새로운 한 끼의 재료가 됩니다.",
+"원래 레시피에 나만의 한 끗을 더해보세요.",
+"바꾸고, 조정하고, 다시 맛보세요.",
+"같은 레시피라도 오늘의 선택은 다를 수 있으니까."
+];
+document.getElementById("quote").textContent=quotes[Math.floor(Math.random()*quotes.length)];
+
+function go(page){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(page).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+const defaults=["쌀","햇반","올리브유","식용유","후추","소금","계란","냉동 새우","스팸","체다치즈","우유","불닭소스","양조간장","액상 치킨스톡","굴소스","페페론치노","파스타면","베이컨","양파","파","다진 마늘","토마토 파스타소스","까르보나라 소스","베이컨 로제 소스","아라비아따 소스"];
+let pantry=JSON.parse(localStorage.getItem("recipePantry")||"null")||defaults;
+const recipes={
+"크림 새우 파스타":{core:["파스타면","새우"],base:[["파스타면","1인분 약 100g"],["새우","6~8마리"],["우유","종이컵 1컵"],["체다치즈","1장"],["마늘","다진 마늘 1/2숟가락"],["올리브유","밥숟가락 1숟가락"],["후추","2~3번 톡톡"],["소금","면 삶을 물에 약간"]],subs:[["생크림","우유 + 체다치즈","조건부 가능","생크림처럼 진하진 않지만 부드러운 소스를 만들 수 있어요."],["버터","올리브유","대체 가능","버터 향은 줄지만 볶는 역할은 할 수 있어요."],["파마산 치즈","체다치즈","조건부 가능","짠맛과 향이 달라지므로 소량부터 넣으세요."]],steps:["물을 끓이고 소금을 약간 넣은 뒤 파스타면을 포장지 시간보다 1분 짧게 삶아요. 면수는 반 컵 남겨둡니다.","팬에 올리브유와 다진 마늘을 넣고 약불에서 20~30초 볶아요.","새우를 넣고 중불에서 속까지 완전히 익혀요.","불을 약하게 줄이고 우유와 체다치즈를 넣어 천천히 저어요. 세게 끓이면 분리될 수 있어요.","면을 넣고 섞어요. 되직하면 면수를 한 숟가락씩 넣어 농도를 맞춰요.","후추를 넣고 맛을 본 뒤 싱거울 때만 소금을 조금씩 추가합니다."],troubles:["소스가 묽어요 → 약불에서 1~2분 더 졸여요.","소스가 되직해요 → 면수나 우유를 한 숟가락씩 넣어요.","소스가 분리돼요 → 불을 끄고 면수를 조금 넣어 천천히 저어요."],taste:["느끼하면 후추나 페페론치노를 조금 추가해요.","치즈의 염도가 높으면 소금은 마지막에 조절하세요."]},
+"김치찌개":{core:["김치"],base:[["김치","밥공기 1~1.5공기"],["스팸 또는 돼지고기 또는 참치","한 줌 또는 작은 캔 1/2개"],["양파","1/4개"],["물","종이컵 2컵"],["고춧가루","1/2~1숟가락 (선택)"],["다진 마늘","1/2숟가락"],["간장","1/2숟가락부터"]],subs:[["돼지고기","스팸 또는 참치","조건부 가능","고기 풍미와 식감은 달라지지만 찌개로 만들 수 있어요."],["대파","양파","대체·보완 가능","향은 달라지지만 양파로 단맛을 보완할 수 있어요."],["고춧가루","불닭소스 소량","조건부 가능","매운맛과 양념 맛이 달라 1/2작은술부터 조절하세요."]],steps:["김치와 양파를 먹기 좋은 크기로 썰어요.","냄비에 기름을 조금 두르고 스팸이나 돼지고기를 볶아요.","김치와 다진 마늘을 넣고 2~3분 볶아요.","물을 붓고 끓기 시작하면 중약불로 10분 정도 끓여요.","양파를 넣고 더 끓인 뒤 간장을 조금씩 넣어 간을 맞춰요."],troubles:["너무 짜요 → 물을 추가하고 조금 더 끓여요.","신맛이 강해요 → 양파를 조금 더 넣고 충분히 끓여요.","싱거워요 → 간장을 1/2작은술씩 추가해요."],taste:["더 칼칼하게 → 고춧가루나 불닭소스를 아주 조금씩 추가해요.","깊은 맛 → 치킨스톡을 소량만 넣고 확인해요."]},
+"계란볶음밥":{core:["밥"],base:[["밥","공기밥 1개"],["계란","1~2개"],["대파 또는 양파","한 줌"],["식용유 또는 올리브유","1숟가락"],["간장","1/2숟가락"],["후추","약간"]],subs:[["대파","양파","대체 가능","향은 다르지만 단맛과 풍미를 보완해요."],["버터","식용유 또는 올리브유","대체 가능","버터 향은 줄어들어요."],["햄","스팸 또는 베이컨","대체 가능","염도가 다르므로 간장은 적게 넣고 시작하세요."]],steps:["밥을 풀어 준비해요. 찬밥이면 더 잘 볶아집니다.","팬을 중불로 예열하고 기름을 둘러요.","계란을 넣고 반쯤 익혀요.","양파나 대파, 스팸 등 넣을 재료를 볶아요.","밥을 넣고 덩어리를 풀면서 볶아요.","팬 가장자리에 간장을 넣어 살짝 끓인 뒤 섞고 후추로 마무리해요."],troubles:["밥이 질어요 → 넓게 펴 수분을 날려요.","너무 짜요 → 밥이나 계란을 조금 더 넣어요.","재료가 타요 → 불을 낮추고 잠깐 팬을 불에서 내려요."],taste:["고소함을 더하려면 참기름이 있으면 몇 방울 넣어요.","스팸·베이컨을 넣었다면 간장은 적게 넣고 시작하세요."]}
+};
+const aliases={"새우":["새우","냉동 새우"],"마늘":["마늘","다진 마늘"],"대파":["대파","파","쪽파"],"파":["대파","파"],"파스타면":["파스타면","스파게티면"],"밥":["밥","쌀","햇반"],"쌀":["쌀","밥","햇반"],"간장":["간장","양조간장"],"식용유":["식용유","올리브유"],"올리브유":["올리브유","식용유"],"햄":["햄","스팸","베이컨"],"스팸":["스팸","햄"],"베이컨":["베이컨","햄"]};
+const ingredientRoles={
+"파스타면":["주된 탄수화물·식감","소스가 달라붙는 표면과 씹는 식감을 만듭니다."],
+"새우":["주재료·단백질·풍미","새우의 단맛과 탱글한 식감이 음식의 중심이 됩니다."],
+"우유":["수분·부드러움·유제품 풍미","소스의 액체 기반이 되고 부드러운 맛을 더합니다."],
+"체다치즈":["지방·짠맛·농도 보완","녹으면서 소스에 고소함과 점성을 더합니다."],
+"마늘":["향·풍미","기름에 볶아 음식의 첫 풍미를 만듭니다."],
+"올리브유":["조리 매개·향","열을 전달하고 마늘 향을 퍼뜨립니다."],
+"양파":["단맛·수분·식감","볶으면서 단맛과 향을 내고 씹는 식감을 더합니다."],
+"계란":["단백질·결합·부드러움","익으면서 고소함과 부드러운 식감을 만듭니다."],
+"밥":["주된 탄수화물·구조","볶음밥의 부피와 씹는 식감을 담당합니다."],
+"간장":["짠맛·감칠맛·색","염도와 발효 풍미, 갈색 색감을 더합니다."],
+"김치":["핵심 재료·산미·매운맛·발효 풍미","김치찌개의 맛과 정체성을 만듭니다."]
+};
+function savePantry(){localStorage.setItem("recipePantry",JSON.stringify(pantry));renderPantry();renderRecommendations()}
+function renderPantry(){const el=document.getElementById("pantry");el.innerHTML=pantry.map((x,i)=>`<button class="chip" onclick="removePantry(${i})">${x} ×</button>`).join("")}
+function removePantry(i){pantry.splice(i,1);savePantry()}
+document.getElementById("addIng").onclick=()=>{let v=document.getElementById("newIng").value.trim();if(v&&!pantry.includes(v)){pantry.push(v);savePantry()}document.getElementById("newIng").value=""}
+document.getElementById("newIng").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("addIng").click()})
+document.getElementById("clearPantry").onclick=()=>{pantry=[];savePantry()}
+document.getElementById("resetPantry").onclick=()=>{pantry=[...defaults];savePantry()}
+function owned(name){const vs=aliases[name]||[name];return pantry.some(p=>vs.some(v=>p.toLowerCase().includes(v.toLowerCase())||v.toLowerCase().includes(p.toLowerCase())))}
+function match(data){const all=[...new Set(data.base.map(x=>x[0]))],own=all.filter(owned),missing=all.filter(x=>!owned(x));return{all,own,missing,coreMissing:data.core.filter(x=>!owned(x)),score:Math.round(own.length/all.length*100)}}
+function renderRecommendations(){
+ const host=document.getElementById("recommendations"); if(!pantry.length){host.innerHTML='<div class="tip">재료를 등록하면 추천을 시작할 수 있어요.</div>';return}
+ const rows=Object.entries(recipes).map(([name,data])=>({name,data,...match(data)})).sort((a,b)=>(a.coreMissing.length-b.coreMissing.length)||(b.score-a.score));
+ host.innerHTML=rows.map(r=>`<div class="rec"><div class="rec-top"><h3>${r.name}</h3><span class="pill ${r.coreMissing.length?'warn':''}">${r.coreMissing.length?'핵심 재료 확인 필요':r.missing.length?'일부 재료 추가 필요':'보유 재료로 만들기 좋음'}</span></div><p>재료 일치도 ${r.score}% · 보유 ${r.own.length}/${r.all.length}</p><p>${r.missing.length?'부족한 재료: '+r.missing.join(', '):'등록된 레시피 재료를 모두 보유하고 있어요.'}</p><button class="btn secondary" onclick="pickRecipe('${r.name}')">이 레시피 살펴보기</button></div>`).join("")
+}
+function pickRecipe(name){document.getElementById("dish").value=name;renderRecipe();document.getElementById("recommendResult").scrollIntoView({behavior:"smooth"})}
+function findRecipe(name){return Object.keys(recipes).find(k=>name.replace(/\s/g,"").includes(k.replace(/\s/g,""))||k.replace(/\s/g,"").includes(name.replace(/\s/g,"")))}
+function renderRecipe(){
+ const name=document.getElementById("dish").value.trim(),key=findRecipe(name);
+ if(!key){alert("현재 버전의 내장 예시는 크림 새우 파스타, 김치찌개, 계란볶음밥입니다.");return}
+ const d=recipes[key],m=match(d);
+ document.getElementById("recStatus").className="pill "+(m.coreMissing.length?"warn":"");
+ document.getElementById("recStatus").textContent=m.coreMissing.length?"핵심 재료 확인 필요":"대체 분석 완료";
+ document.getElementById("resultTitle").textContent=key;
+ document.getElementById("resultIntro").textContent=m.coreMissing.length?"핵심 재료가 없어 원래 음식과 다른 결과가 될 수 있습니다.":"보유 재료를 기준으로 조리 포인트를 구성했습니다.";
+ document.getElementById("substitutions").innerHTML=d.subs.map(s=>`<div class="tip"><b>${s[0]} → ${s[1]}</b><br><span class="pill ${s[2].includes('조건부')?'warn':''}">${s[2]}</span> ${s[3]}</div>`).join("");
+ document.getElementById("ingredientRoles").innerHTML=[...new Set(d.base.map(x=>x[0]))].map(n=>{let r=ingredientRoles[n]||["맛·식감 또는 조리 보조","정확한 대체 여부는 이 재료가 해당 요리에서 맡는 기능을 기준으로 판단해야 합니다."];return `<div class="role-card"><b>${n} · ${r[0]}</b>${r[1]}</div>`}).join("");
+ document.getElementById("ingredients").innerHTML="<table class='ingredient-table'>"+d.base.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td></tr>`).join("")+"</table>";
+ document.getElementById("steps").innerHTML=d.steps.map(x=>`<li>${x}</li>`).join("");
+ document.getElementById("troubles").innerHTML=d.troubles.map(x=>`<div class="tip">${x}</div>`).join("");
+ document.getElementById("taste").innerHTML=d.taste.map(x=>`<div class="tip">${x}</div>`).join("");
+ document.getElementById("recommendResult").classList.add("show");document.getElementById("recommendEmpty").style.display="none";
+}
+document.getElementById("makeRecommend").onclick=renderRecipe;
+document.getElementById("sampleRecommend").onclick=()=>{document.getElementById("dish").value="크림 새우 파스타";renderRecipe()}
+renderPantry();renderRecommendations();
+
+let currentMode="sub";
+function setMode(mode){
+ currentMode=mode;
+ document.querySelectorAll(".mode-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+ document.querySelectorAll(".mode").forEach(x=>x.classList.toggle("active",x.id==="mode-"+mode));
+}
+document.querySelectorAll(".mode-tabs button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+document.querySelectorAll(".input-tabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".input-tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+ document.getElementById("textInput").style.display=b.dataset.input==="text"?"block":"none";
+ document.getElementById("photoInput").style.display=b.dataset.input==="photo"?"block":"none";
+});
+function row(container,kind){
+ const d=document.createElement("div");d.className="dynamic-row";
+ if(kind==="sub"){d.innerHTML='<input placeholder="바꾸기 전 재료"><input placeholder="바꿀 재료"><button onclick="this.parentElement.remove()">삭제</button>'}
+ else{d.innerHTML='<input placeholder="재료 (예: 팥앙금 200g)"><input placeholder="변경량 (예: 250g)"><button onclick="this.parentElement.remove()">삭제</button>'}
+ document.getElementById(container).appendChild(d)
+}
+function addSubRow(){row("subRows","sub")}function addRatioRow(){row("ratioRows","ratio")}function addBothSubRow(){row("bothSubRows","sub")}function addBothRatioRow(){row("bothRatioRows","ratio")}
+addSubRow();addRatioRow();addBothSubRow();addBothRatioRow();
+function readRows(id){return [...document.querySelectorAll("#"+id+" .dynamic-row")].map(r=>[r.children[0].value.trim(),r.children[1].value.trim()]).filter(x=>x[0]||x[1])}
+function generateVariation(){
+ const name=document.getElementById("varName").value.trim()||"입력 레시피";
+ const recipe=document.getElementById("recipeText").value.trim();
+ let subs=[],ratios=[];
+ if(currentMode==="sub"){subs=readRows("subRows")}
+ if(currentMode==="ratio"){ratios=readRows("ratioRows")}
+ if(currentMode==="both"){subs=readRows("bothSubRows");ratios=readRows("bothRatioRows")}
+ const goal=document.getElementById("goal").value.trim()||"변경 후에도 전체 레시피의 맛과 구조가 자연스럽게 유지되도록 조정";
+ let warnings=[],advice=[];
+ subs.forEach(([from,to])=>{
+   if(!from||!to)return;
+   if(/젤라틴|한천/.test(from+" "+to))advice.push(`${from} → ${to}: 응고 방식이 달라질 수 있으므로 동일한 중량으로 단순 치환하지 말고 최종 농도와 냉각 후 굳기를 확인하세요.`);
+   else if(/소금|간장|치즈|스팸|베이컨/.test(to))advice.push(`${from} → ${to}: 염도가 달라질 수 있으므로 원래 레시피의 소금·간장 등 추가 간은 줄인 상태에서 마지막에 조절하세요.`);
+   else advice.push(`${from} → ${to}: 맛·향·수분·지방 함량 차이로 결과가 달라질 수 있으므로 처음에는 보수적으로 적용하고 완성 상태를 확인하세요.`);
+ });
+ ratios.forEach(([from,to])=>{
+   if(from&&to)advice.push(`${from} → ${to}: 양이 바뀌면 다른 재료의 상대적인 비율도 영향을 받습니다. 특히 액체·응고제·소금처럼 기능이 큰 재료는 함께 재조정해야 합니다.`);
+ });
+ if(!subs.length&&!ratios.length)warnings.push("변경사항이 입력되지 않았습니다.");
+ if(!recipe)warnings.push("원래 레시피 내용이 비어 있습니다. 실제 AI 분석을 연결할 경우 원문 레시피를 함께 전달하는 것이 좋습니다.");
+ const verdict=warnings.length?"추가 정보가 필요합니다":"조건부로 가능하지만, 변경된 재료의 기능을 기준으로 다른 재료와 조리 과정을 함께 조정해야 합니다.";
+ document.getElementById("variationResult").innerHTML=`<span class="pill ${warnings.length?'warn':''}">${warnings.length?'입력 확인 필요':'변형 가능성 평가'}</span><h3 style="margin:10px 0 5px">${name}</h3><p><b>종합 판단:</b> ${verdict}</p>${warnings.map(x=>`<div class="tip">${x}</div>`).join("")}${advice.map(x=>`<div class="tip">${x}</div>`).join("")}<div class="note"><b>요청 목표:</b> ${goal}</div>`;
+ const prompt=`[RE:CIPE 레시피 변형 요청]
+레시피 이름: ${name}
+원래 레시피:
+${recipe||"(내용 없음)"}
+
+재료 대체:
+${subs.length?subs.map(x=>"- "+x[0]+" → "+x[1]).join("\\n"):"없음"}
+
+양/비율 조절:
+${ratios.length?ratios.map(x=>"- "+x[0]+" → "+x[1]).join("\\n"):"없음"}
+
+사용자 목표:
+${goal}
+
+다음 내용을 한국어로 분석해 주세요.
+1. 변경된 레시피의 성공 가능성
+2. 대체 재료가 원래 재료의 어떤 기능을 대신하는지
+3. 맛·향·식감·농도·색·보관성의 예상 변화
+4. 다른 재료의 양이나 조리 순서를 함께 바꿔야 하는지
+5. 실패 가능성이 높은 지점과 복구 방법
+6. 최종 수정 레시피와 단계별 조리법
+7. 변경을 권장하지 않는 경우 그 이유`;
+ document.getElementById("promptBox").textContent=prompt;
+}
+function resetVariation(){
+ document.getElementById("varName").value="";document.getElementById("recipeText").value="";document.getElementById("goal").value="";
+ ["subRows","ratioRows","bothSubRows","bothRatioRows"].forEach(id=>document.getElementById(id).innerHTML="");
+ addSubRow();addRatioRow();addBothSubRow();addBothRatioRow();
+ document.getElementById("variationResult").innerHTML="왼쪽에서 변경사항을 입력하고 「변형 결과 만들기」를 눌러주세요.";
+ document.getElementById("promptBox").textContent="아직 생성된 요청문이 없습니다.";
+}
+</script>
+</body>
+</html>
