@@ -91,6 +91,96 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
 @media(max-width:820px){.header-inner{gap:12px}.grid{grid-template-columns:1fr}.change-grid{grid-template-columns:1fr}.dynamic-row{grid-template-columns:1fr 1fr auto}}
 @media(max-width:560px){.header-inner{height:auto;min-height:70px;flex-wrap:wrap;padding:12px 16px}.nav{width:100%;overflow:auto}.hero-logo{font-size:56px}}
 </style>
+
+<style id="recipe-v05-home-animation">
+/* RE:CIPE v05 — subtle landing animation */
+@keyframes recipeLogoEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(26px) scale(.965);
+    filter: blur(7px);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.012);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes recipeTextEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes recipeLogoBreath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-2px) scale(1.006); }
+}
+@keyframes recipeSoftGlow {
+  0%, 100% { text-shadow: 0 0 0 rgba(30,70,120,0); }
+  50%      { text-shadow: 0 0 24px rgba(30,70,120,.13); }
+}
+
+/* Broad selectors so this works with the existing landing-page structure */
+.home .logo,
+.home .hero-logo,
+.home .brand-logo,
+.home h1,
+.home .hero h1,
+.home .hero-title,
+.landing .logo,
+.landing h1,
+.hero-logo,
+.hero h1,
+.hero-title {
+  animation:
+    recipeLogoEnter .9s cubic-bezier(.2,.75,.25,1) both,
+    recipeSoftGlow 3.2s ease-in-out 1s 2;
+}
+
+.home .subtitle,
+.home .tagline,
+.home .hero p,
+.home .hero-subtitle,
+.landing .subtitle,
+.landing .tagline,
+.hero p,
+.hero-subtitle {
+  animation: recipeTextEnter .7s ease-out .38s both;
+}
+
+/* Slight, restrained idle motion after entrance */
+.home .logo:hover,
+.home .hero-logo:hover,
+.home .brand-logo:hover,
+.home h1:hover,
+.home .hero h1:hover,
+.home .hero-title:hover,
+.landing .logo:hover,
+.landing h1:hover,
+.hero-logo:hover,
+.hero h1:hover,
+.hero-title:hover {
+  transform: scale(1.015);
+  transition: transform .25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home .logo, .home .hero-logo, .home .brand-logo,
+  .home h1, .home .hero h1, .home .hero-title,
+  .landing .logo, .landing h1,
+  .hero-logo, .hero h1, .hero-title,
+  .home .subtitle, .home .tagline, .home .hero p,
+  .home .hero-subtitle, .landing .subtitle, .landing .tagline,
+  .hero p, .hero-subtitle {
+    animation: none !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header class="header">
