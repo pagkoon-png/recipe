@@ -199,6 +199,54 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
 .serving-box input[type=range]{width:100%;margin:12px 0 5px;accent-color:#f15a0a}
 .serving-scale{display:flex;justify-content:space-between;color:#606975;font-size:12px}
 </style>
+
+<style id="allergy-layout-fix">
+/* 알레르기/기피 성분 체크 영역 정렬 개선 */
+#allergyPanel .allergy-options,
+.allergy-options{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:18px !important;
+  flex-wrap:nowrap !important;
+}
+#allergyPanel .allergy-option,
+.allergy-option{
+  display:flex !important;
+  align-items:center !important;
+  gap:7px !important;
+  flex:1 1 0 !important;
+  min-width:0 !important;
+  white-space:nowrap !important;
+}
+#allergyPanel .allergy-option label,
+.allergy-option label{
+  display:inline-block !important;
+  font-size:16px !important;
+  line-height:1.35 !important;
+  white-space:nowrap !important;
+  word-break:keep-all !important;
+  letter-spacing:-0.2px !important;
+}
+#allergyPanel input[type="checkbox"],
+.allergy-option input[type="checkbox"]{
+  width:16px !important;
+  height:16px !important;
+  flex:0 0 16px !important;
+  margin:0 !important;
+}
+@media (max-width:600px){
+  #allergyPanel .allergy-options,
+  .allergy-options{
+    gap:10px !important;
+  }
+  #allergyPanel .allergy-option label,
+  .allergy-option label{
+    font-size:14px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header class="header">
