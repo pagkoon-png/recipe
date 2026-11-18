@@ -257,6 +257,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
           <div class="section"><h3>초보자용 조리 순서</h3><ol class="list" id="steps"></ol></div>
           <div class="section"><h3>실패 방지 & 복구 팁</h3><div id="troubles"></div></div>
           <div class="section"><h3>맛 조절</h3><div id="taste"></div></div>
+          <div class="section" id="recipeActions" style="display:none">
+            <h3>이 레시피로 할 수 있는 작업</h3>
+            <div class="actions">
+              <button class="btn secondary" id="copyRecipeBtn" type="button">📋 레시피 클립보드에 복사</button>
+              <button class="btn primary" id="moveRecipeBtn" type="button">↻ 레시피 변형으로 옮기기</button>
+            </div>
+            <div id="recipeActionStatus" class="muted" style="margin-top:8px"></div>
+          </div>
         </div>
         <div class="card" id="recommendEmpty">
           <h2>레시피 결과가 여기에 표시됩니다</h2>
@@ -400,12 +408,19 @@ function renderRecommendations(){
  const rows=Object.entries(recipes).map(([name,data])=>({name,data,...match(data)})).sort((a,b)=>(a.coreMissing.length-b.coreMissing.length)||(b.score-a.score));
  host.innerHTML=rows.map(r=>`<div class="rec"><div class="rec-top"><h3>${r.name}</h3><span class="pill ${r.coreMissing.length?'warn':''}">${r.coreMissing.length?'핵심 재료 확인 필요':r.missing.length?'일부 재료 추가 필요':'보유 재료로 만들기 좋음'}</span></div><p>재료 일치도 ${r.score}% · 보유 ${r.own.length}/${r.all.length}</p><p>${r.missing.length?'부족한 재료: '+r.missing.join(', '):'등록된 레시피 재료를 모두 보유하고 있어요.'}</p><button class="btn secondary" onclick="pickRecipe('${r.name}')">이 레시피 살펴보기</button></div>`).join("")
 }
-function pickRecipe(name){document.getElementById("dish").value=name;renderRecipe();document.getElementById("recommendResult").scrollIntoView({behavior:"smooth"})}
+function pickRecipe(name){
+ document.getElementById("dish").value=name;
+ renderRecipe();
+ document.getElementById("recommendResult").scrollIntoView({behavior:"smooth"});
+}
 function findRecipe(name){return Object.keys(recipes).find(k=>name.replace(/\s/g,"").includes(k.replace(/\s/g,""))||k.replace(/\s/g,"").includes(name.replace(/\s/g,"")))}
 function renderRecipe(){
  const name=document.getElementById("dish").value.trim(),key=findRecipe(name);
  if(!key){alert("현재 버전의 내장 예시는 크림 새우 파스타, 김치찌개, 계란볶음밥입니다.");return}
  const d=recipes[key],m=match(d);
+ selectedRecipeKey=key;
+ const recipeActions=document.getElementById("recipeActions");
+ if(recipeActions) recipeActions.style.display="block";
  document.getElementById("recStatus").className="pill "+(m.coreMissing.length?"warn":"");
  document.getElementById("recStatus").textContent=m.coreMissing.length?"핵심 재료 확인 필요":"대체 분석 완료";
  document.getElementById("resultTitle").textContent=key;
@@ -418,6 +433,76 @@ function renderRecipe(){
  document.getElementById("taste").innerHTML=d.taste.map(x=>`<div class="tip">${x}</div>`).join("");
  document.getElementById("recommendResult").classList.add("show");document.getElementById("recommendEmpty").style.display="none";
 }
+
+// ===== 추가 기능: 추천 레시피 복사 / 레시피 변형으로 보내기 =====
+let selectedRecipeKey="";
+
+function getSelectedRecipeText(){
+ const key=selectedRecipeKey||findRecipe(document.getElementById("dish").value.trim());
+ if(!key || !recipes[key]) return "";
+ const d=recipes[key];
+ const lines=[];
+ lines.push("[RE:CIPE] "+key);
+ lines.push("");
+ lines.push("재료");
+ d.base.forEach(x=>lines.push("- "+x[0]+": "+x[1]));
+ lines.push("");
+ lines.push("조리 순서");
+ d.steps.forEach((x,i)=>lines.push((i+1)+". "+x));
+ lines.push("");
+ lines.push("대체 가능 재료");
+ d.subs.forEach(x=>lines.push("- "+x[0]+" → "+x[1]+" ("+x[2]+"): "+x[3]));
+ lines.push("");
+ lines.push("실패 방지 팁");
+ d.troubles.forEach(x=>lines.push("- "+x));
+ return lines.join("\\n");
+}
+
+async function copySelectedRecipe(){
+ const text=getSelectedRecipeText();
+ const status=document.getElementById("recipeActionStatus");
+ if(!text){status.textContent="먼저 추천 레시피를 선택해주세요.";return;}
+ try{
+   await navigator.clipboard.writeText(text);
+ }catch(e){
+   const ta=document.createElement("textarea");
+   ta.value=text;
+   document.body.appendChild(ta);
+   ta.select();
+   document.execCommand("copy");
+   ta.remove();
+ }
+ status.textContent="✅ 레시피가 클립보드에 복사되었습니다.";
+}
+
+function moveSelectedRecipeToVariation(){
+ const key=selectedRecipeKey||findRecipe(document.getElementById("dish").value.trim());
+ if(!key || !recipes[key]) return;
+ const d=recipes[key];
+
+ const recipeText=[
+   "[추천 레시피] "+key,
+   "",
+   "[재료]",
+   ...d.base.map(x=>"- "+x[0]+": "+x[1]),
+   "",
+   "[조리 순서]",
+   ...d.steps.map((x,i)=>(i+1)+". "+x)
+ ].join("\\n");
+
+ document.getElementById("varName").value=key;
+ document.getElementById("recipeText").value=recipeText;
+
+ // 기존 사이트의 페이지 이동 함수를 그대로 사용
+ go("variation");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+const copyRecipeBtn=document.getElementById("copyRecipeBtn");
+const moveRecipeBtn=document.getElementById("moveRecipeBtn");
+if(copyRecipeBtn) copyRecipeBtn.onclick=copySelectedRecipe;
+if(moveRecipeBtn) moveRecipeBtn.onclick=moveSelectedRecipeToVariation;
+
 document.getElementById("makeRecommend").onclick=renderRecipe;
 document.getElementById("sampleRecommend").onclick=()=>{document.getElementById("dish").value="크림 새우 파스타";renderRecipe()}
 renderPantry();renderRecommendations();
@@ -593,93 +678,6 @@ function resetVariation(){
  document.getElementById("variationResult").innerHTML="왼쪽에서 변경사항을 입력하고 「변형 결과 만들기」를 눌러주세요.";
  document.getElementById("promptBox").textContent="아직 생성된 요청문이 없습니다.";
 }
-</script>
-
-<!-- RE:CIPE: 추가 기능만 별도로 붙임 -->
-<div id="recipe-action-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);">
-  <div id="recipe-action-box" style="position:relative;width:min(680px,calc(100% - 32px));max-height:82vh;overflow:auto;margin:8vh auto 0;padding:24px;border-radius:16px;background:#fff;box-shadow:0 18px 60px rgba(0,0,0,.25);">
-    <button id="recipe-action-close" type="button" style="position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:28px;cursor:pointer;">×</button>
-    <h3 id="recipe-action-title">레시피</h3>
-    <pre id="recipe-action-content" style="white-space:pre-wrap;font-family:inherit;line-height:1.6;"></pre>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
-      <button id="copy-recipe-button" type="button">📋 레시피 복사</button>
-      <button id="move-recipe-button" type="button">🔄 레시피 변형으로 옮기기</button>
-    </div>
-  </div>
-</div>
-<script>
-/* RE:CIPE additive layer: original functionality is not replaced. */
-(function(){
-  const modal=document.getElementById('recipe-action-modal');
-  const box=document.getElementById('recipe-action-box');
-  const content=document.getElementById('recipe-action-content');
-  const title=document.getElementById('recipe-action-title');
-  const copyBtn=document.getElementById('copy-recipe-button');
-  const moveBtn=document.getElementById('move-recipe-button');
-  const closeBtn=document.getElementById('recipe-action-close');
-  if(!modal||!box||!content||!title||!copyBtn||!moveBtn||!closeBtn)return;
-
-  let selectedText='',selectedName='';
-
-  function openFor(el){
-    selectedText=(el.innerText||el.textContent||'').trim();
-    if(!selectedText)return;
-    const h=el.querySelector('h1,h2,h3,h4,.recipe-title,.title');
-    selectedName=h?(h.textContent||'').trim():'추천 레시피';
-    title.textContent=selectedName||'추천 레시피';
-    content.textContent=selectedText;
-    modal.style.display='block';
-  }
-  function close(){modal.style.display='none';}
-
-  function bind(){
-    const nodes=document.querySelectorAll(
-      '[data-recipe],.recipe-card,.recipe-item,.recommend-card,.recommended-recipe,.recipe'
-    );
-    nodes.forEach(el=>{
-      if(el.dataset.recipeActionBound==='1')return;
-      el.dataset.recipeActionBound='1';
-      el.addEventListener('click',function(e){
-        if(e.target.closest('button,a,input,textarea,select'))return;
-        openFor(el);
-      });
-    });
-  }
-
-  copyBtn.addEventListener('click',async function(){
-    try{await navigator.clipboard.writeText(selectedText);}
-    catch(e){
-      const ta=document.createElement('textarea');
-      ta.value=selectedText;document.body.appendChild(ta);ta.select();
-      document.execCommand('copy');ta.remove();
-    }
-    copyBtn.textContent='✅ 복사 완료';
-    setTimeout(()=>copyBtn.textContent='📋 레시피 복사',1200);
-  });
-
-  moveBtn.addEventListener('click',function(){
-    sessionStorage.setItem('recipeFromRecommendation',selectedText);
-    sessionStorage.setItem('recipeFromRecommendationName',selectedName);
-
-    // 기존 사이트의 navigate 함수를 우선 사용
-    if(typeof window.navigate==='function'){
-      try{window.navigate('variation');}catch(e){}
-    }else{
-      const link=[...document.querySelectorAll('a,button')].find(el=>
-        /레시피\s*변형/.test((el.textContent||'').trim())
-      );
-      if(link)link.click();
-    }
-    close();
-  });
-
-  closeBtn.addEventListener('click',close);
-  modal.addEventListener('click',e=>{if(e.target===modal)close();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-
-  bind();
-  new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
-})();
 </script>
 </body>
 </html>
