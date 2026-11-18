@@ -181,6 +181,24 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
 }
 </style>
 
+<style>
+/* v06 additions: allergy filter / expiry / servings */
+.allergy-box{background:#fffaf0;border:1px solid #f0d27b;border-radius:12px;padding:12px 14px;margin:10px 0 14px}
+.allergy-title{font-weight:800;margin-bottom:8px;color:#8b5b00}
+.allergy-box label{display:inline-flex;align-items:center;gap:5px;margin:4px 12px 4px 0;font-size:14px}
+.allergy-box input{accent-color:#1976d2}
+.pantry-chip-wrap{display:inline-flex;align-items:center}
+.pantry-chip-wrap .chip{margin-right:4px}
+.expiry-badge{font-size:11px;font-weight:800;padding:3px 6px;border-radius:999px;background:#f0f2f5;color:#5d6470;vertical-align:middle}
+.expiry-badge.soon{background:#fff0e8;color:#e44716}
+.expiry-badge.today{background:#ffe7e7;color:#d71920}
+.expiry-badge.expired{background:#222;color:#fff}
+.serving-box{background:#f7f8fa;border:1px solid #e2e5e9;border-radius:14px;padding:14px 16px;margin:14px 0}
+.serving-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.serving-head span{background:#f15a0a;color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px}
+.serving-box input[type=range]{width:100%;margin:12px 0 5px;accent-color:#f15a0a}
+.serving-scale{display:flex;justify-content:space-between;color:#606975;font-size:12px}
+</style>
 </head>
 <body>
 <header class="header">
@@ -221,7 +239,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
         <div class="card">
           <h2>① 내 냉장고 재료</h2>
           <p class="sub">재료는 이 브라우저에 저장됩니다.</p>
-          <div class="row"><input id="newIng" placeholder="예: 양파, 두부, 버터"><button class="btn" id="addIng">추가</button></div><div class="quick-hint"><button type="button" onclick="addQuickIngredients('계란, 양파, 밥')">계란·양파·밥</button><button type="button" onclick="addQuickIngredients('우유, 파스타면, 새우')">우유·파스타·새우</button></div>
+          <div class="row"><input id="newIng" placeholder="예: 양파, 두부, 버터"><input id="newExpiry" type="date" aria-label="유통기한" title="유통기한" style="max-width:170px"><button class="btn" id="addIng">추가</button></div>
+          <div class="muted" style="margin:-3px 0 10px">유통기한을 입력하면 재료 옆에 D-Day가 표시됩니다.</div><div class="quick-hint"><button type="button" onclick="addQuickIngredients('계란, 양파, 밥')">계란·양파·밥</button><button type="button" onclick="addQuickIngredients('우유, 파스타면, 새우')">우유·파스타·새우</button></div>
           <div class="chips" id="pantry"></div>
           <div class="actions"><button class="btn secondary" id="resetPantry">예시 재료 불러오기</button><button class="btn ghost" id="clearPantry">전체 비우기</button></div>
           <div class="note">현재 내장 예시 추천과 함께 AI에게 새로운 레시피 추천을 요청할 수 있습니다. AI 기능을 사용하려면 아래 안내대로 백엔드를 연결해야 합니다.</div>
@@ -229,7 +248,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
 
         <div class="card">
           <h2>② 추천 레시피</h2>
-          <p class="sub">보유 재료가 많은 레시피부터 보여줍니다.</p>
+          <p class="sub">보유 재료가 많은 레시피부터 보여줍니다. 아래 성분을 선택하면 해당 성분이 포함된 레시피를 추천에서 제외합니다.</p>
+          <div class="allergy-box">
+            <div class="allergy-title">⚠️ 내 알레르기 / 기피 성분 체크</div>
+            <label><input type="checkbox" class="allergy-filter" value="shellfish"> 갑각류(새우)</label>
+            <label><input type="checkbox" class="allergy-filter" value="dairy"> 유제품(우유)</label>
+            <label><input type="checkbox" class="allergy-filter" value="egg"> 난류(계란)</label>
+            <label><input type="checkbox" class="allergy-filter" value="gluten"> 밀(글루텐)</label>
+          </div>
           <div id="recommendations" class="recommendations"></div>
         </div>
 
@@ -240,6 +266,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
           <input id="dish" value="크림 새우 파스타" placeholder="예: 김치찌개">
           <label for="style">원하는 방식</label>
           <select id="style"><option>원래 음식의 특징을 최대한 유지</option><option>가장 쉽고 실패 적은 방식</option><option>보유 재료를 최대한 활용</option></select>
+          <div class="serving-box">
+            <div class="serving-head"><b>🍽️ 인분 수 조절</b><span id="servingBadge">1인분 기준</span></div>
+            <input id="servingRange" type="range" min="1" max="4" step="1" value="1">
+            <div class="serving-scale"><span>1인분(1인)</span><span>2인분</span><span>3인분</span><span>4인분(가족)</span></div>
+          </div>
           <label for="notes">추가 조건</label>
           <textarea id="notes" placeholder="예: 2인분, 우유는 조금밖에 없음, 매운맛 약하게"></textarea>
           <div class="actions"><button class="btn secondary" id="makeRecommend">내장 예시 보기</button><button class="btn primary" id="aiRecommend">AI로 추천하기</button><button class="btn ghost" id="sampleRecommend">예시 채우기</button></div><div id="aiRecStatus" class="ai-status muted" style="margin-top:8px"><span class="spinner"></span><span></span></div>
@@ -374,11 +405,23 @@ function go(page){
 
 const defaults=["쌀","햇반","올리브유","식용유","후추","소금","계란","냉동 새우","스팸","체다치즈","우유","불닭소스","양조간장","액상 치킨스톡","굴소스","페페론치노","파스타면","베이컨","양파","파","다진 마늘","토마토 파스타소스","까르보나라 소스","베이컨 로제 소스","아라비아따 소스"];
 let pantry=JSON.parse(localStorage.getItem("recipePantry")||"null")||defaults;
+let pantryExpiry=JSON.parse(localStorage.getItem("recipePantryExpiry")||"{}")||{};
+let selectedAllergens=JSON.parse(localStorage.getItem("recipeAllergyFilters")||"[]")||[];
+let servings=1;
 const recipes={
 "크림 새우 파스타":{core:["파스타면","새우"],base:[["파스타면","1인분 약 100g"],["새우","6~8마리"],["우유","종이컵 1컵"],["체다치즈","1장"],["마늘","다진 마늘 1/2숟가락"],["올리브유","밥숟가락 1숟가락"],["후추","2~3번 톡톡"],["소금","면 삶을 물에 약간"]],subs:[["생크림","우유 + 체다치즈","조건부 가능","생크림처럼 진하진 않지만 부드러운 소스를 만들 수 있어요."],["버터","올리브유","대체 가능","버터 향은 줄지만 볶는 역할은 할 수 있어요."],["파마산 치즈","체다치즈","조건부 가능","짠맛과 향이 달라지므로 소량부터 넣으세요."]],steps:["물을 끓이고 소금을 약간 넣은 뒤 파스타면을 포장지 시간보다 1분 짧게 삶아요. 면수는 반 컵 남겨둡니다.","팬에 올리브유와 다진 마늘을 넣고 약불에서 20~30초 볶아요.","새우를 넣고 중불에서 속까지 완전히 익혀요.","불을 약하게 줄이고 우유와 체다치즈를 넣어 천천히 저어요. 세게 끓이면 분리될 수 있어요.","면을 넣고 섞어요. 되직하면 면수를 한 숟가락씩 넣어 농도를 맞춰요.","후추를 넣고 맛을 본 뒤 싱거울 때만 소금을 조금씩 추가합니다."],troubles:["소스가 묽어요 → 약불에서 1~2분 더 졸여요.","소스가 되직해요 → 면수나 우유를 한 숟가락씩 넣어요.","소스가 분리돼요 → 불을 끄고 면수를 조금 넣어 천천히 저어요."],taste:["느끼하면 후추나 페페론치노를 조금 추가해요.","치즈의 염도가 높으면 소금은 마지막에 조절하세요."]},
 "김치찌개":{core:["김치"],base:[["김치","밥공기 1~1.5공기"],["스팸 또는 돼지고기 또는 참치","한 줌 또는 작은 캔 1/2개"],["양파","1/4개"],["물","종이컵 2컵"],["고춧가루","1/2~1숟가락 (선택)"],["다진 마늘","1/2숟가락"],["간장","1/2숟가락부터"]],subs:[["돼지고기","스팸 또는 참치","조건부 가능","고기 풍미와 식감은 달라지지만 찌개로 만들 수 있어요."],["대파","양파","대체·보완 가능","향은 달라지지만 양파로 단맛을 보완할 수 있어요."],["고춧가루","불닭소스 소량","조건부 가능","매운맛과 양념 맛이 달라 1/2작은술부터 조절하세요."]],steps:["김치와 양파를 먹기 좋은 크기로 썰어요.","냄비에 기름을 조금 두르고 스팸이나 돼지고기를 볶아요.","김치와 다진 마늘을 넣고 2~3분 볶아요.","물을 붓고 끓기 시작하면 중약불로 10분 정도 끓여요.","양파를 넣고 더 끓인 뒤 간장을 조금씩 넣어 간을 맞춰요."],troubles:["너무 짜요 → 물을 추가하고 조금 더 끓여요.","신맛이 강해요 → 양파를 조금 더 넣고 충분히 끓여요.","싱거워요 → 간장을 1/2작은술씩 추가해요."],taste:["더 칼칼하게 → 고춧가루나 불닭소스를 아주 조금씩 추가해요.","깊은 맛 → 치킨스톡을 소량만 넣고 확인해요."]},
 "계란볶음밥":{core:["밥"],base:[["밥","공기밥 1개"],["계란","1~2개"],["대파 또는 양파","한 줌"],["식용유 또는 올리브유","1숟가락"],["간장","1/2숟가락"],["후추","약간"]],subs:[["대파","양파","대체 가능","향은 다르지만 단맛과 풍미를 보완해요."],["버터","식용유 또는 올리브유","대체 가능","버터 향은 줄어들어요."],["햄","스팸 또는 베이컨","대체 가능","염도가 다르므로 간장은 적게 넣고 시작하세요."]],steps:["밥을 풀어 준비해요. 찬밥이면 더 잘 볶아집니다.","팬을 중불로 예열하고 기름을 둘러요.","계란을 넣고 반쯤 익혀요.","양파나 대파, 스팸 등 넣을 재료를 볶아요.","밥을 넣고 덩어리를 풀면서 볶아요.","팬 가장자리에 간장을 넣어 살짝 끓인 뒤 섞고 후추로 마무리해요."],troubles:["밥이 질어요 → 넓게 펴 수분을 날려요.","너무 짜요 → 밥이나 계란을 조금 더 넣어요.","재료가 타요 → 불을 낮추고 잠깐 팬을 불에서 내려요."],taste:["고소함을 더하려면 참기름이 있으면 몇 방울 넣어요.","스팸·베이컨을 넣었다면 간장은 적게 넣고 시작하세요."]}
 };
+
+// 레시피별 알레르기/기피 성분 정보
+const recipeAllergens={
+  "크림 새우 파스타":["shellfish","dairy","gluten"],
+  "김치찌개":[],
+  "계란볶음밥":["egg","gluten"]
+};
+const allergenLabels={shellfish:"갑각류",dairy:"유제품",egg:"난류",gluten:"밀(글루텐)"};
+
 const aliases={"새우":["새우","냉동 새우"],"마늘":["마늘","다진 마늘"],"대파":["대파","파","쪽파"],"파":["대파","파"],"파스타면":["파스타면","스파게티면"],"밥":["밥","쌀","햇반"],"쌀":["쌀","밥","햇반"],"간장":["간장","양조간장"],"식용유":["식용유","올리브유"],"올리브유":["올리브유","식용유"],"햄":["햄","스팸","베이컨"],"스팸":["스팸","햄"],"베이컨":["베이컨","햄"]};
 const ingredientRoles={
 "파스타면":["주된 탄수화물·식감","소스가 달라붙는 표면과 씹는 식감을 만듭니다."],
@@ -393,19 +436,73 @@ const ingredientRoles={
 "간장":["짠맛·감칠맛·색","염도와 발효 풍미, 갈색 색감을 더합니다."],
 "김치":["핵심 재료·산미·매운맛·발효 풍미","김치찌개의 맛과 정체성을 만듭니다."]
 };
-function savePantry(){localStorage.setItem("recipePantry",JSON.stringify(pantry));renderPantry();renderRecommendations()}
-function renderPantry(){const el=document.getElementById("pantry");el.innerHTML=pantry.map((x,i)=>`<button class="chip" onclick="removePantry(${i})">${x} ×</button>`).join("")}
-function removePantry(i){pantry.splice(i,1);savePantry()}
-function addQuickIngredients(value){value.split(/[,，]/).map(x=>x.trim()).filter(Boolean).forEach(v=>{if(!pantry.includes(v))pantry.push(v)});savePantry()}
-document.getElementById("addIng").onclick=()=>{let v=document.getElementById("newIng").value.trim();if(v){v.split(/[,，]/).map(x=>x.trim()).filter(Boolean).forEach(x=>{if(!pantry.includes(x))pantry.push(x)});savePantry()}document.getElementById("newIng").value=""}
+function savePantry(){
+  localStorage.setItem("recipePantry",JSON.stringify(pantry));
+  localStorage.setItem("recipePantryExpiry",JSON.stringify(pantryExpiry));
+  document.querySelectorAll(".allergy-filter").forEach(cb=>{
+  cb.checked=selectedAllergens.includes(cb.value);
+  cb.addEventListener("change",()=>{
+    selectedAllergens=[...document.querySelectorAll(".allergy-filter:checked")].map(x=>x.value);
+    localStorage.setItem("recipeAllergyFilters",JSON.stringify(selectedAllergens));
+    renderRecommendations();
+  });
+});
+renderPantry();renderRecommendations();
+}
+function expiryInfo(name){
+  const raw=pantryExpiry[name];
+  if(!raw)return "";
+  const target=new Date(raw+"T23:59:59");
+  if(isNaN(target.getTime()))return "";
+  const today=new Date(); today.setHours(0,0,0,0);
+  const diff=Math.ceil((target-today)/86400000);
+  if(diff<0)return '<span class="expiry-badge expired">유통기한 지남</span>';
+  if(diff===0)return '<span class="expiry-badge today">D-Day</span>';
+  if(diff<=3)return '<span class="expiry-badge soon">D-'+diff+'</span>';
+  return '<span class="expiry-badge">D-'+diff+'</span>';
+}
+function renderPantry(){
+  const el=document.getElementById("pantry");
+  el.innerHTML=pantry.map((x,i)=>`<span class="pantry-chip-wrap"><button class="chip" onclick="removePantry(${i})">${x} ×</button>${expiryInfo(x)}</span>`).join("");
+}
+function removePantry(i){
+  const name=pantry[i];pantry.splice(i,1);delete pantryExpiry[name];savePantry();
+}
+function addPantryItems(value,expiry){
+  value.split(/[,，]/).map(x=>x.trim()).filter(Boolean).forEach(x=>{
+    if(!pantry.includes(x))pantry.push(x);
+    if(expiry)pantryExpiry[x]=expiry;
+  });
+  savePantry();
+}
+function addQuickIngredients(value){addPantryItems(value,"")}
+document.getElementById("addIng").onclick=()=>{
+  let v=document.getElementById("newIng").value.trim();
+  let expiry=document.getElementById("newExpiry").value;
+  if(v)addPantryItems(v,expiry);
+  document.getElementById("newIng").value="";
+  document.getElementById("newExpiry").value="";
+}
 document.getElementById("newIng").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("addIng").click()})
-document.getElementById("clearPantry").onclick=()=>{pantry=[];savePantry()}
-document.getElementById("resetPantry").onclick=()=>{pantry=[...defaults];savePantry()}
+document.getElementById("clearPantry").onclick=()=>{
+  pantry=[];pantryExpiry={};savePantry()
+}
+document.getElementById("resetPantry").onclick=()=>{
+  pantry=[...defaults];pantryExpiry={};savePantry()
+}
 function owned(name){const vs=aliases[name]||[name];return pantry.some(p=>vs.some(v=>p.toLowerCase().includes(v.toLowerCase())||v.toLowerCase().includes(p.toLowerCase())))}
 function match(data){const all=[...new Set(data.base.map(x=>x[0]))],own=all.filter(owned),missing=all.filter(x=>!owned(x));return{all,own,missing,coreMissing:data.core.filter(x=>!owned(x)),score:Math.round(own.length/all.length*100)}}
 function renderRecommendations(){
- const host=document.getElementById("recommendations"); if(!pantry.length){host.innerHTML='<div class="tip">재료를 등록하면 추천을 시작할 수 있어요.</div>';return}
- const rows=Object.entries(recipes).map(([name,data])=>({name,data,...match(data)})).sort((a,b)=>(a.coreMissing.length-b.coreMissing.length)||(b.score-a.score));
+ const host=document.getElementById("recommendations");
+ if(!pantry.length){host.innerHTML='<div class="tip">재료를 등록하면 추천을 시작할 수 있어요.</div>';return}
+ const rows=Object.entries(recipes)
+   .map(([name,data])=>({name,data,...match(data)}))
+   .filter(r=>!selectedAllergens.some(a=>(recipeAllergens[r.name]||[]).includes(a)))
+   .sort((a,b)=>(a.coreMissing.length-b.coreMissing.length)||(b.score-a.score));
+ if(!rows.length){
+   host.innerHTML='<div class="tip">선택한 알레르기/기피 성분을 제외하면 추천할 수 있는 내장 레시피가 없습니다. 체크를 해제해 보세요.</div>';
+   return;
+ }
  host.innerHTML=rows.map(r=>`<div class="rec"><div class="rec-top"><h3>${r.name}</h3><span class="pill ${r.coreMissing.length?'warn':''}">${r.coreMissing.length?'핵심 재료 확인 필요':r.missing.length?'일부 재료 추가 필요':'보유 재료로 만들기 좋음'}</span></div><p>재료 일치도 ${r.score}% · 보유 ${r.own.length}/${r.all.length}</p><p>${r.missing.length?'부족한 재료: '+r.missing.join(', '):'등록된 레시피 재료를 모두 보유하고 있어요.'}</p><button class="btn secondary" onclick="pickRecipe('${r.name}')">이 레시피 살펴보기</button></div>`).join("")
 }
 function pickRecipe(name){
@@ -414,6 +511,32 @@ function pickRecipe(name){
  document.getElementById("recommendResult").scrollIntoView({behavior:"smooth"});
 }
 function findRecipe(name){return Object.keys(recipes).find(k=>name.replace(/\s/g,"").includes(k.replace(/\s/g,""))||k.replace(/\s/g,"").includes(name.replace(/\s/g,"")))}
+function formatScaledNumber(n){
+  const v=Math.round(n*100)/100;
+  return Number.isInteger(v)?String(v):String(v).replace(/0+$/,"").replace(/\.$/,"");
+}
+function scaleQuantityText(text, factor){
+  return String(text).replace(/\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?/g, token=>{
+    if(token.includes("/")){
+      const parts=token.split("/").map(Number);
+      if(parts.length===2 && parts[1]) return formatScaledNumber((parts[0]/parts[1])*factor);
+    }
+    return formatScaledNumber(Number(token)*factor);
+  });
+}
+function scaledBase(data){
+  return data.base.map(x=>[x[0],scaleQuantityText(x[1],servings)]);
+}
+function updateServingUI(){
+  const el=document.getElementById("servingRange"),badge=document.getElementById("servingBadge");
+  if(!el)return;
+  servings=Number(el.value)||1;
+  if(badge)badge.textContent=servings+"인분 기준";
+  if(document.getElementById("recommendResult").classList.contains("show"))renderRecipe();
+}
+const servingRange=document.getElementById("servingRange");
+if(servingRange)servingRange.addEventListener("input",updateServingUI);
+
 function renderRecipe(){
  const name=document.getElementById("dish").value.trim(),key=findRecipe(name);
  if(!key){alert("현재 버전의 내장 예시는 크림 새우 파스타, 김치찌개, 계란볶음밥입니다.");return}
@@ -427,7 +550,8 @@ function renderRecipe(){
  document.getElementById("resultIntro").textContent=m.coreMissing.length?"핵심 재료가 없어 원래 음식과 다른 결과가 될 수 있습니다.":"보유 재료를 기준으로 조리 포인트를 구성했습니다.";
  document.getElementById("substitutions").innerHTML=d.subs.map(s=>`<div class="tip"><b>${s[0]} → ${s[1]}</b><br><span class="pill ${s[2].includes('조건부')?'warn':''}">${s[2]}</span> ${s[3]}</div>`).join("");
  document.getElementById("ingredientRoles").innerHTML=[...new Set(d.base.map(x=>x[0]))].map(n=>{let r=ingredientRoles[n]||["맛·식감 또는 조리 보조","정확한 대체 여부는 이 재료가 해당 요리에서 맡는 기능을 기준으로 판단해야 합니다."];return `<div class="role-card"><b>${n} · ${r[0]}</b>${r[1]}</div>`}).join("");
- document.getElementById("ingredients").innerHTML="<table class='ingredient-table'>"+d.base.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td></tr>`).join("")+"</table>";
+ const displayBase=scaledBase(d);
+ document.getElementById("ingredients").innerHTML="<table class='ingredient-table'>"+displayBase.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td></tr>`).join("")+"</table>";
  document.getElementById("steps").innerHTML=d.steps.map(x=>`<li>${x}</li>`).join("");
  document.getElementById("troubles").innerHTML=d.troubles.map(x=>`<div class="tip">${x}</div>`).join("");
  document.getElementById("taste").innerHTML=d.taste.map(x=>`<div class="tip">${x}</div>`).join("");
@@ -445,7 +569,9 @@ function getSelectedRecipeText(){
  lines.push("[RE:CIPE] "+key);
  lines.push("");
  lines.push("재료");
- d.base.forEach(x=>lines.push("- "+x[0]+": "+x[1]));
+ scaledBase(d).forEach(x=>lines.push("- "+x[0]+": "+x[1]));
+ lines.push("");
+ lines.push("기준 인분: "+servings+"인분");
  lines.push("");
  lines.push("조리 순서");
  d.steps.forEach((x,i)=>lines.push((i+1)+". "+x));
@@ -484,7 +610,7 @@ function moveSelectedRecipeToVariation(){
    "[추천 레시피] "+key,
    "",
    "[재료]",
-   ...d.base.map(x=>"- "+x[0]+": "+x[1]),
+   ...scaledBase(d).map(x=>"- "+x[0]+": "+x[1]),
    "",
    "[조리 순서]",
    ...d.steps.map((x,i)=>(i+1)+". "+x)
